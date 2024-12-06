@@ -2,26 +2,47 @@ name: Package Dependencies
 
 on:
   workflow_dispatch:  # 允许手动触发
+  push:
+    paths:
+      - 'package.json'
+      - 'package-lock.json'
+      - 'yarn.lock'
 
 jobs:
-  package-dependencies:
+  build:
     runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        node-version: [18.x]  # 使用Node.js 18.x版本
+        
     steps:
-    - uses: actions/checkout@v2
-
-    - name: Use Node.js
-      uses: actions/setup-node@v2
+    - uses: actions/checkout@v3
+    
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v3
       with:
-        node-version: '14'  # 使用您项目所需的Node.js版本
-
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'  # 启用npm缓存
+        
     - name: Install dependencies
-      run: npm ci  # 使用 ci 而不是 install 以确保使用 package-lock.json
-
+      run: |
+        npm config set registry https://registry.npmmirror.com
+        npm install
+        
     - name: Package node_modules
-      run: tar -czf node_modules.tar.gz node_modules
-
-    - name: Upload node_modules
-      uses: actions/upload-artifact@v2
+      run: |
+        tar -czf node_modules.tar.gz node_modules
+        echo "打包完成，创建压缩文件 node_modules.tar.gz"
+        
+    - name: Upload node_modules artifact
+      uses: actions/upload-artifact@v3
       with:
         name: node_modules
         path: node_modules.tar.gz
+        retention-days: 5  # 设置保留期限
+        
+    - name: Package Info
+      run: |
+        echo "依赖打包已完成"
+        echo "您可以在 Actions 页面下载 node_modules.tar.gz"
