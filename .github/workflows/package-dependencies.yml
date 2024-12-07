@@ -7,6 +7,7 @@ on:
       - 'package.json'
       - 'package-lock.json'
       - 'yarn.lock'
+      - 'sell.js'
 
 jobs:
   build:
@@ -30,19 +31,23 @@ jobs:
         npm config set registry https://registry.npmmirror.com
         npm install
         
+    - name: Install sell.js specific dependencies
+      run: |
+        npm install @opensea/seaport-js @truffle/hdwallet-provider fs random dotenv
+        
     - name: Package node_modules
       run: |
-        tar -czf node_modules.tar.gz node_modules
-        echo "打包完成，创建压缩文件 node_modules.tar.gz"
+        zip -r node_modules.zip node_modules
+        echo "打包完成，创建压缩文件 node_modules.zip"
         
     - name: Upload node_modules artifact
       uses: actions/upload-artifact@v3
       with:
         name: node_modules
-        path: node_modules.tar.gz
+        path: node_modules.zip
         retention-days: 5  # 设置保留期限
         
     - name: Package Info
       run: |
         echo "依赖打包已完成"
-        echo "您可以在 Actions 页面下载 node_modules.tar.gz"
+        echo "您可以在 Actions 页面下载 node_modules.zip"
