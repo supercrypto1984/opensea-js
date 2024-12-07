@@ -36,8 +36,10 @@ jobs:
         npm install @opensea/seaport-js @truffle/hdwallet-provider fs random dotenv
         
     - name: Package node_modules
+      shell: bash
       run: |
-        zip -r node_modules.zip node_modules
+        cd $GITHUB_WORKSPACE
+        zip -r node_modules.zip node_modules/
         echo "打包完成，创建压缩文件 node_modules.zip"
         
     - name: Upload node_modules artifact
